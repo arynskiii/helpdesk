@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+package vacancy_documents;
+option go_package = "github.com/arynskiii/help_desk/pb";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+service DocToolsService {
+    rpc UploadFilesWithCompress(FileUploadRequest) returns (FileUploadResponse);
+    rpc GeneratePdf(GeneratePdfRequest) returns (PdfFile);
+    rpc GeneratePdfFromTemplate(GeneratePdfFromTemplateRequest) returns (PdfFile);
+    rpc GeneratePetitionPdf(GeneratePetitionPdfRequest) returns (PdfFile);
+    rpc GenerateTicketPdf(GenerateTicketPdfRequest) returns (PdfFile);
+    rpc MergePdfFiles(MergePdfFilesRequest) returns (PdfFile);
+    rpc GenerateVacancyReport(GenerateVacancyReportRequest) returns (ExcelFile);
+}
+
+message FileUploadRequest {
+  bytes file = 1;
+  string file_name = 2;
+  int64 size_of_file_header = 3;
+  string folder = 4;
+  bool IsWaterMark = 5; 
+}
+
+message FileUploadResponse {
+  string file_path = 1;
+  string file_name = 2;
+  NullableString thumb = 3;
+  NullableString original_file_path = 4;
+}
+
+message GeneratePdfRequest {
+  string body = 1;
+  string css = 2;
+  bool set_landscape = 3;
+  NullableUint32 hm = 4;
+  NullableUint32 vm = 5;
+  NullableDouble scale = 6;
+  bool grayscale = 7;
+  NullableString header_file_name = 8;
+  NullableString footer_file_name = 9;
+}
+
+message PdfFile {
+  bytes file = 1;
+}
+
+message GeneratePdfFromTemplateRequest {
+  string body = 1;
+  string css = 2;
+  bool set_landscape = 3;
+  NullableInt32 lang = 4;
+  NullableString doc_uuid = 5;
+  NullableUint32 hm = 6;
+  NullableUint32 vm = 7;
+  NullableDouble scale = 8;
+  bool grayscale = 9;
+  NullableString headerFileName = 10;
+  NullableString footerFileName = 11;
+}
+
+message GeneratePetitionPdfRequest {
+  int32 lang = 1;
+  string organization_name = 2;
+  string organization_address = 3;
+  string organization_phone_number = 4;
+  string organization_email = 5;
+  string organization_bin = 6;
+  string number = 7;
+  google.protobuf.Timestamp date = 8;
+  string student_fio = 9;
+  string student_speciality = 10;
+  string vacancy_name = 11;
+  string head_fio = 12;
+}
+
+message GenerateTicketPdfRequest {
+  string lang = 1;
+  string queue_number = 2;
+  NullableString queue_name = 3;
+  google.protobuf.Timestamp queue_date = 4;
+  int64 queue_count = 5;
+}
+
+message MergePdfFilesRequest {
+  repeated bytes pdf_files = 1;
+}
+
+message GenerateVacancyReportRequest {
+  repeated VacancyReport vacancy_report = 1;
+  repeated VacancyStudentReport vacancy_student_report = 2;
+}
+
+message VacancyReport {
+  string organization_name = 1;
+  string vacancy_name = 2;
+  string response_count = 3;
+  string invited_count = 4;
+  string hired_count = 5;
+}
+
+message VacancyStudentReport {
+  string fio = 1;
+  string faculty_name = 2;
+  string speciality_name = 3;
+  string study_form_name = 4;
+  string study_lang_name = 5;
+  bool is_registered = 6;
+  bool is_resume_filled = 7;
+  bool is_invited = 8;
+  bool is_hired = 9;
+}
+
+message ExcelFile {
+  bytes file = 1;
+}
+
+message NullableUint32 {
+  oneof Kind {
+      google.protobuf.NullValue Null = 1;
+      uint32 Value = 2;
+  }
+}
+
+message NullableInt32 {
+  oneof Kind {
+      google.protobuf.NullValue Null = 1;
+      int32 Value = 2;
+  }
+}
+
+message NullableString {
+  oneof Kind {
+      google.protobuf.NullValue Null = 1;
+      string Value = 2;
+  }
+}
+
+message NullableDouble {
+  oneof Kind {
+      google.protobuf.NullValue Null = 1;
+      double Value = 2;
+  }
+}
+
+//you have to be in the directory: /doc-service/internal/app/grpc/proto
+//cd internal/app/grpc/proto
+
+//if you have issue and you can't run, use: 
+//go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+//export PATH=$PATH:$(go env GOPATH)/bin
+//source ~/.bashrc
+
+// FOR GENERATE PROTO GRPC FILE:
+// protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative yourFile.proto
